@@ -93,7 +93,19 @@ function ns:UpdateVignetteOnMinimap(instanceid)
 	else
 		icon.texture:Show()
 	end
+
+	self:UpdateEdge(icon)
 end
+
+function ns:UpdateEdge(icon)
+	icon:SetAlpha(HBDPins:IsMinimapIconOnEdge(icon) and 0.6 or 1)
+end
+
+C_Timer.NewTicker(1, function(...)
+	for instanceid, icon in pairs(vignetteIcons) do
+		ns:UpdateEdge(icon)
+	end
+end)
 
 MinimapRangeExtenderPinMixin = {}
 function MinimapRangeExtenderPinMixin:OnLoad() end
@@ -110,4 +122,3 @@ end
 function MinimapRangeExtenderPinMixin:OnMouseLeave()
 	GameTooltip:Hide()
 end
-
