@@ -1,4 +1,4 @@
-## Interface: 80000
+## Interface: 80205
 ## Title: Minimap Range Extender
 ## Notes: Show vignette icons sooner
 ## Version: @project-version@
