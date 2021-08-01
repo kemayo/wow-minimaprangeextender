@@ -18,3 +18,4 @@ embeds.xml
 
 addon.lua
 addon.xml
+config.lua
