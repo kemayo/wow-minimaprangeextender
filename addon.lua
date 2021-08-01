@@ -5,11 +5,17 @@ local HBD = LibStub("HereBeDragons-2.0")
 local HBDPins = LibStub("HereBeDragons-Pins-2.0")
 
 local f = CreateFrame('Frame')
-f:SetScript("OnEvent", function(self, event, ...)
-	ns[event](ns, event, ...)
+f:SetScript("OnEvent", function(_, event, ...)
+	ns[ns.events[event]](ns, event, ...)
 end)
-f:RegisterEvent("ADDON_LOADED")
 f:Hide()
+ns.events = {}
+function ns:RegisterEvent(event, method)
+	self.events[event] = method or event
+	f:RegisterEvent(event)
+end
+function ns:UnregisterEvent(...) for i=1,select("#", ...) do f:UnregisterEvent((select(i, ...))) end end
+ns:RegisterEvent("ADDON_LOADED")
 
 local db
 local compat_disabled = false
@@ -51,8 +57,9 @@ function ns:ADDON_LOADED(event, name)
 
 	self.pool = CreateFramePool("FRAME", Minimap, "MinimapRangeExtenderPinTemplate")
 
-	f:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")
-	f:RegisterEvent("VIGNETTES_UPDATED")
+	ns:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")
+	ns:RegisterEvent("VIGNETTES_UPDATED")
+	ns:RegisterEvent("PLAYER_ENTERING_WORLD", "VIGNETTES_UPDATED")
 
 	self:VIGNETTES_UPDATED()
 
@@ -107,7 +114,7 @@ function module:UpdateVignetteOnMinimap(instanceid)
 		return
 	end
 	-- Debug("considering vignette", instanceid)
-	local uiMapID = HBD:GetPlayerZone()
+	local uiMapID = C_Map.GetBestMapForUnit("player")
 	if not uiMapID then
 		return -- Debug("can't determine current zone")
 	end
