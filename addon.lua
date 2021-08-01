@@ -167,7 +167,9 @@ C_Timer.NewTicker(1, function(...)
 end)
 
 MinimapRangeExtenderPinMixin = {}
-function MinimapRangeExtenderPinMixin:OnLoad() end
+function MinimapRangeExtenderPinMixin:OnLoad()
+	self:SetMouseClickEnabled(false)
+end
 function MinimapRangeExtenderPinMixin:OnMouseEnter()
 	-- TODO: see VignettePinMixin for PVP bounty vignettes if I want to handle this?
 	-- Debug("OnMouseEnter", self, self.info and self.info.name)
