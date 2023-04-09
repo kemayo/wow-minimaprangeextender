@@ -1,5 +1,6 @@
 local myname, ns = ...
 local module = ns
+local core = ns
 
 local HBD = LibStub("HereBeDragons-2.0")
 local HBDPins = LibStub("HereBeDragons-Pins-2.0")
@@ -66,6 +67,10 @@ function ns:ADDON_LOADED(event, name)
 	f:UnregisterEvent("ADDON_LOADED")
 end
 
+function ns:GetCoord(x, y)
+    return floor(x * 10000 + 0.5) * 10000 + floor(y * 10000 + 0.5)
+end
+
 -- Everything below here is just kept in sync with SilverDragon_RangeExtender
 
 local vignetteIcons = {
@@ -95,7 +100,7 @@ function module:VIGNETTES_UPDATED()
 	-- Debug("VIGNETTES_UPDATED", #vignetteids)
 
 	for instanceid, icon in pairs(vignetteIcons) do
-		if not tContains(vignetteids, instanceid) or (icon.info and not db.types[icon.info.atlasName:lower()]) or (not icon.info and not db.mystery) or not db.enabled then
+		if not tContains(vignetteids, instanceid) or (icon.info and not self.db.profile.types[icon.info.atlasName:lower()]) or (not icon.info and not self.db.profile.mystery) or not self.db.profile.enabled then
 			HBDPins:RemoveMinimapIcon(self, icon)
 			icon:Hide()
 			icon.info = nil
@@ -110,7 +115,7 @@ function module:VIGNETTES_UPDATED()
 end
 
 function module:UpdateVignetteOnMinimap(instanceid)
-	if compat_disabled or not db.enabled then
+	if compat_disabled or not self.db.profile.enabled then
 		return
 	end
 	-- Debug("considering vignette", instanceid)
@@ -119,11 +124,11 @@ function module:UpdateVignetteOnMinimap(instanceid)
 		return -- Debug("can't determine current zone")
 	end
 	local vignetteInfo = C_VignetteInfo.GetVignetteInfo(instanceid)
-	if not db.mystery and not (vignetteInfo and vignetteInfo.vignetteGUID and vignetteInfo.atlasName) then
+	if not self.db.profile.mystery and not (vignetteInfo and vignetteInfo.vignetteGUID and vignetteInfo.atlasName) then
 		return -- Debug("vignette had no info")
 	end
 	if vignetteInfo then
-		if not db.types[vignetteInfo.atlasName:lower()] then
+		if not self.db.profile.types[vignetteInfo.atlasName:lower()] then
 			return -- Debug("vignette type not enabled", vignetteInfo.atlasName)
 		end
 	end
@@ -132,16 +137,21 @@ function module:UpdateVignetteOnMinimap(instanceid)
 		return -- Debug("vignette had no position")
 	end
 	local x, y = position:GetXY()
+	if self:ShouldHideVignette(vignetteInfo, uiMapID, x, y) then
+		return
+	end
 
 	local icon = vignetteIcons[instanceid]
 	if not icon then
 		icon = self.pool:Acquire()
 		icon.texture:SetAtlas(vignetteInfo and vignetteInfo.atlasName or "poi-nzothvision")
+		icon.texture:SetAlpha(vignetteInfo and 1 or 0.7)
 		icon.texture:SetDesaturated(true)
 		vignetteIcons[instanceid] = icon
 		HBDPins:AddMinimapIconMap(self, icon, uiMapID, x, y, false, true)
 		-- icon.instanceid = instanceid
 		icon.info = vignetteInfo
+		icon.coord = core:GetCoord(x, y)
 	end
 
 	if vignetteInfo and vignetteInfo.onMinimap then
@@ -151,6 +161,34 @@ function module:UpdateVignetteOnMinimap(instanceid)
 	end
 
 	self:UpdateEdge(icon)
+end
+
+do
+	-- These show up for glowing highlights on NPCs in-town a lot, which gets in the way
+	local inconvenient = {
+		[2022] = { -- Waking Shores
+			[47118257] = true,
+			[47318338] = true,
+		},
+		[2023] = { -- Ohn'ahran Plains
+			[60403766] = true,
+		},
+		[2024] = { -- Azure Span
+			[12824918] = true,
+			[13144926] = true,
+		},
+		[2112] = { -- Valdrakken
+			[58173512] = true,
+		},
+		[2151] = { -- Forbidden Reach
+			[34325998] = true,
+			[34085997] = true,
+		},
+	}
+	function module:ShouldHideVignette(vignetteInfo, uiMapID, x, y)
+		if not inconvenient[uiMapID] then return end
+		return inconvenient[uiMapID][core:GetCoord(x, y)]
+	end
 end
 
 function module:UpdateEdge(icon)
