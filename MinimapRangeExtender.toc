@@ -1,9 +1,10 @@
-## Interface: 100007
+## Interface: 100100
 ## Title: Minimap Range Extender
 ## Notes: Show vignette icons sooner
 ## Version: @project-version@
 ## Author: Kemayo
 ## eMail: kemayo at gmail dot com
+## IconTexture: Interface\Icons\Ability_Spy
 ## X-Category: Interface Enhancements
 ## X-Donate: PayPal:kemayo AT gmail DOT com
 ## OptionalDependencies: HereBeDragons
