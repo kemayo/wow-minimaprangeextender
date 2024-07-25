@@ -1,5 +1,5 @@
 local myname, ns = ...
-local myfullname = GetAddOnMetadata(myname, "Title")
+local myfullname = C_AddOns.GetAddOnMetadata(myname, "Title")
 
 local GAP = 8
 local EDGEGAP = 16
@@ -111,12 +111,14 @@ frame:SetScript("OnShow", function(frame)
     frame:SetScript("OnShow", nil)
 end)
 
-InterfaceOptions_AddCategory(frame)
+local category, layout = Settings.RegisterCanvasLayoutCategory(frame, frame.name, frame.name)
+category.ID = frame.name
+Settings.RegisterAddOnCategory(category)
 
 _G["SLASH_".. myname:upper().."1"] = "/rangeextend"
 _G["SLASH_".. myname:upper().."2"] = "/minimaprangeextender"
 SlashCmdList[myname:upper()] = function(msg)
-    InterfaceOptionsFrame_OpenToCategory(myfullname)
+    Settings.OpenToCategory(myfullname)
 end
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1", true)
@@ -125,7 +127,7 @@ if ldb then
         type = "launcher",
         icon = [[Interface\Icons\Ability_Spy]],
         OnClick = function(self, button)
-            InterfaceOptionsFrame_OpenToCategory(myfullname)
+            Settings.OpenToCategory(myfullname)
         end,
     })
 end
