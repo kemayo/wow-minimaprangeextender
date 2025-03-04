@@ -56,7 +56,13 @@ function ns:ADDON_LOADED(event, name)
 	db = _G[myname.."DB"]
 	ns.db = db
 
-	self.pool = CreateFramePool("FRAME", Minimap, "MinimapRangeExtenderPinTemplate")
+	self.pool = CreateFramePool("FRAME", Minimap, "MinimapRangeExtenderPinTemplate", function(_, icon)
+		-- this behavior is copied from HandyNotes, on the assumption that it knows what it's doing for minimap icons
+		local frameLevel = Minimap:GetFrameLevel() + 5
+		local frameStrata = Minimap:GetFrameStrata()
+		icon:SetFrameStrata(frameStrata)
+		icon:SetFrameLevel(frameLevel)
+	end)
 
 	ns:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")
 	ns:RegisterEvent("VIGNETTES_UPDATED")
@@ -75,7 +81,7 @@ end
 -- (It can *almost* entirely be copy-pasted in, but the references to `self.db.profile` need to be replaced.)
 
 function module:GetVignetteID(vignetteGUID, vignetteInfo)
-    return vignetteInfo and vignetteInfo.vignetteID or tonumber((select(6, strsplit('-', vignetteGUID))))
+	return vignetteInfo and vignetteInfo.vignetteID or tonumber((select(6, strsplit('-', vignetteGUID))))
 end
 
 local vignetteIcons = {
@@ -96,8 +102,10 @@ function module:VIGNETTE_MINIMAP_UPDATED(event, instanceid, onMinimap, ...)
 
 	if onMinimap then
 		icon.texture:Hide()
+		icon:EnableMouse(false)
 	else
 		icon.texture:Show()
+		icon:EnableMouse(true)
 	end
 end
 function module:VIGNETTES_UPDATED()
@@ -109,6 +117,7 @@ function module:VIGNETTES_UPDATED()
 			HBDPins:RemoveMinimapIcon(self, icon)
 			icon:Hide()
 			icon.info = nil
+			icon.instanceid = nil
 			vignetteIcons[instanceid] = nil
 			self.pool:Release(icon)
 		end
@@ -161,8 +170,10 @@ function module:UpdateVignetteOnMinimap(instanceid)
 
 	if vignetteInfo and vignetteInfo.onMinimap then
 		icon.texture:Hide()
+		icon:EnableMouse(false)
 	else
 		icon.texture:Show()
+		icon:EnableMouse(true)
 	end
 
 	self:UpdateEdge(icon)
@@ -221,6 +232,7 @@ function MinimapRangeExtenderPinMixin:OnMouseEnter()
 	if not self.info then
 		GameTooltip:AddLine("This mystery vignette has no information available", 1, 1, 1, true)
 	end
+	GameTooltip:AddDoubleLine(" ", "RangeExtender", 1, 1, 1, 1, 0.5, 0.5)
 	GameTooltip:Show()
 end
 function MinimapRangeExtenderPinMixin:OnMouseLeave()
