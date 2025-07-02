@@ -19,7 +19,7 @@ function ns:UnregisterEvent(...) for i=1,select("#", ...) do f:UnregisterEvent((
 ns:RegisterEvent("ADDON_LOADED")
 
 local db
-local compat_disabled = false
+local compat_disabled = not C_EventUtils.IsEventValid("VIGNETTE_MINIMAP_UPDATED")
 
 local function setDefaults(options, defaults)
 	setmetatable(options, { __index = function(t, k)
