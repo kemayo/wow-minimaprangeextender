@@ -19,7 +19,7 @@ function ns:UnregisterEvent(...) for i=1,select("#", ...) do f:UnregisterEvent((
 ns:RegisterEvent("ADDON_LOADED")
 
 local db
-local compat_disabled = not C_EventUtils.IsEventValid("VIGNETTE_MINIMAP_UPDATED")
+local compat_disabled
 
 local function setDefaults(options, defaults)
 	setmetatable(options, { __index = function(t, k)
@@ -56,6 +56,9 @@ function ns:ADDON_LOADED(event, name)
 	db = _G[myname.."DB"]
 	ns.db = db
 
+	compat_disabled = not C_EventUtils.IsEventValid("VIGNETTE_MINIMAP_UPDATED")
+	self.compat_disabled = compat_disabled
+
 	self.pool = CreateFramePool("FRAME", Minimap, "MinimapRangeExtenderPinTemplate", function(_, icon)
 		-- this behavior is copied from HandyNotes, on the assumption that it knows what it's doing for minimap icons
 		local frameLevel = Minimap:GetFrameLevel() + 5
@@ -63,6 +66,8 @@ function ns:ADDON_LOADED(event, name)
 		icon:SetFrameStrata(frameStrata)
 		icon:SetFrameLevel(frameLevel)
 	end)
+
+	if compat_disabled then return end
 
 	ns:RegisterEvent("VIGNETTE_MINIMAP_UPDATED")
 	ns:RegisterEvent("VIGNETTES_UPDATED")
