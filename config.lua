@@ -112,13 +112,12 @@ frame:SetScript("OnShow", function(frame)
 end)
 
 local category, layout = Settings.RegisterCanvasLayoutCategory(frame, frame.name, frame.name)
-category.ID = frame.name
 Settings.RegisterAddOnCategory(category)
 
 _G["SLASH_".. myname:upper().."1"] = "/rangeextend"
 _G["SLASH_".. myname:upper().."2"] = "/minimaprangeextender"
 SlashCmdList[myname:upper()] = function(msg)
-    Settings.OpenToCategory(myfullname)
+    Settings.OpenToCategory(category:GetID())
 end
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1", true)
@@ -127,7 +126,7 @@ if ldb then
         type = "launcher",
         icon = [[Interface\Icons\Ability_Spy]],
         OnClick = function(self, button)
-            Settings.OpenToCategory(myfullname)
+            Settings.OpenToCategory(category:GetID())
         end,
     })
 end
